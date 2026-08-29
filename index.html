@@ -51,7 +51,6 @@
   /* HARDCODED PHOTOS - RAW GITHUB LINKS */
   --envelope-photo: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/Sealed.jpg");
   --hero-img: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg");
-  --venue-img: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue.jpg");
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
@@ -330,7 +329,7 @@ h1,h2,h3,p{ margin:0; }
 }
 
 /* ==========================================================================
-   3. HERO (ADJUSTED TO UNCOVER FACES)
+   3. HERO
    ========================================================================== */
 #home{
   position:relative;
@@ -520,19 +519,50 @@ h1,h2,h3,p{ margin:0; }
 .lb-next{ right:14px; top:50%; transform:translateY(-50%); }
 
 /* ==========================================================================
-   7. VENUE FULL-SCREEN IMAGE
+   7. VENUE FULL IMAGE (UNCROPPED)
    ========================================================================== */
 #venue-image{
-  position:relative; min-height:78vh;
-  background:var(--venue-img), linear-gradient(160deg,#7a2438,var(--burgundy-deep));
-  background-size:cover; background-position:center;
-  display:flex; align-items:flex-end;
+  position:relative;
+  width:100%;
+  background:linear-gradient(160deg, #551523, #3A0D18);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
   color:#fff;
+  overflow:hidden;
 }
-#venue-image::before{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(58,13,24,0.15) 0%, rgba(58,13,24,0.78) 100%); }
-.venue-image-inner{ position:relative; z-index:1; padding:50px 24px; text-align:center; width:100%; }
+.venue-img-wrap{
+  width:100%;
+  position:relative;
+}
+.venue-img-wrap img{
+  width:100%;
+  height:auto;
+  display:block;
+  max-height:85vh;
+  object-fit:contain;
+}
+#venue-image::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(58,13,24,0.2) 0%, rgba(58,13,24,0.1) 50%, rgba(58,13,24,0.8) 100%);
+  z-index:1;
+  pointer-events:none;
+}
+.venue-image-inner{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:2;
+  padding:30px 24px;
+  text-align:center;
+  width:100%;
+}
 .venue-image-inner .eyebrow{ color:var(--gold-light); }
-.venue-image-name{ font-family:var(--font-script); font-size:clamp(2.4rem,9vw,3.4rem); margin-top:10px; }
+.venue-image-name{ font-family:var(--font-script); font-size:clamp(2.4rem,9vw,3.4rem); margin-top:6px; }
 
 /* ==========================================================================
    8. LOCATION
@@ -778,6 +808,9 @@ h1,h2,h3,p{ margin:0; }
 
   <!-- ===================== VENUE FULL IMAGE ===================== -->
   <section id="venue-image">
+    <div class="venue-img-wrap">
+      <img id="venueImgEl" src="https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue.jpg" alt="Romanica Venue">
+    </div>
     <div class="venue-image-inner">
       <p class="eyebrow reveal">The Venue</p>
       <p class="venue-image-name reveal reveal-delay-1">Romanica Venue</p>
@@ -958,7 +991,8 @@ function setHeroImage(url){
   qs('#home').style.setProperty('--hero-img', `url("${url}")`);
 }
 function setVenueImage(url){
-  qs('#venue-image').style.setProperty('--venue-img', `url("${url}")`);
+  const imgEl = qs('#venueImgEl');
+  if(imgEl) imgEl.src = url;
 }
 
 /* ==========================================================================
@@ -1024,7 +1058,7 @@ let revealObserver;
 function initRevealObserver(){
   if(revealObserver) return;
   revealObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
+    entries.forEach(entry)=>{
       if(entry.isIntersecting){
         entry.target.classList.add('in-view');
         revealObserver.unobserve(entry.target);
