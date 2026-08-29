@@ -1058,7 +1058,7 @@ let revealObserver;
 function initRevealObserver(){
   if(revealObserver) return;
   revealObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry)=>{
+    entries.forEach(entry => {
       if(entry.isIntersecting){
         entry.target.classList.add('in-view');
         revealObserver.unobserve(entry.target);
