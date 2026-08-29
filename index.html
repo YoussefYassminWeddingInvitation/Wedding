@@ -19,10 +19,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Parisienne&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<!-- FIREBASE REALTIME DATABASE SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <style>
 /* ==========================================================================
    0. DESIGN TOKENS
@@ -853,22 +849,7 @@ const CONFIG = {
   venueImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue_full.jpg"
 };
 
-/* ==========================================================================
-   FIREBASE REALTIME DATABASE INITIALIZATION
-   ========================================================================== */
-const firebaseConfig = {
-  databaseURL: "https://youssef-yassmin-wedding-default-rtdb.firebaseio.com"
-};
-
-let db = null;
-if (typeof firebase !== 'undefined' && firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_PROJECT_ID")) {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-  } catch (e) {
-    console.warn("Firebase initialization skipped or failed:", e);
-  }
-}
+const FIREBASE_DB_URL = "https://youssef-yassmin-wedding-default-rtdb.firebaseio.com";
 
 /* ==========================================================================
    UTILITIES
@@ -907,7 +888,6 @@ function openEnvelope(){
   const fullLetter = qs('#fullLetter');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Start music automatically on seal tap (registered as user gesture)
   if(CONFIG.musicUrl && audioEl){
     audioEl.play().then(() => {
       musicBtn.classList.add('playing');
@@ -1030,7 +1010,7 @@ qs('#addCalendarBtn').addEventListener('click', ()=>{
 });
 
 /* ==========================================================================
-   RSVP & LIVE WISHES WALL
+   RSVP & LIVE WISHES WALL (FIREBASE REST API)
    ========================================================================== */
 const wishesWall = qs('#wishesWall');
 let localWishes = [];
@@ -1051,18 +1031,19 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function subscribeToWishes(){
-  if (db) {
-    db.ref('wishes').on('value', (snapshot) => {
-      const data = snapshot.val();
-      const items = [];
-      if (data) {
-        Object.keys(data).forEach(key => items.push(data[key]));
-      }
-      items.sort((a,b) => (b.ts||0) - (a.ts||0));
-      renderWishes(items.slice(0, 50));
-    });
-  } else {
+async function loadWishes(){
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}/wishes.json`);
+    if (!res.ok) throw new Error("Database fetch error");
+    const data = await res.json();
+    const items = [];
+    if (data) {
+      Object.keys(data).forEach(key => items.push(data[key]));
+    }
+    items.sort((a,b) => (b.ts||0) - (a.ts||0));
+    renderWishes(items.slice(0, 50));
+  } catch(err) {
+    console.warn("REST API fetch failed, loading local fallback:", err);
     const saved = localStorage.getItem('youssef_yassmin_wishes');
     if (saved) {
       try { localWishes = JSON.parse(saved); } catch(e){}
@@ -1087,26 +1068,30 @@ qs('#rsvpForm').addEventListener('submit', async (e)=>{
   btn.disabled = true;
   const entry = { name, message, ts: Date.now() };
 
-  if (db) {
-    try {
-      await db.ref('wishes').push(entry);
-      note.textContent = 'Thank you — your wishes mean the world to us!';
-      note.className = 'form-note ok';
-      qs('#rsvpForm').reset();
-    } catch(err) {
-      console.error(err);
-      note.textContent = "Couldn't send your message. Please check your connection.";
-      note.className = 'form-note err';
-    }
-  } else {
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}/wishes.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+
+    if (!res.ok) throw new Error("Write failed");
+
+    note.textContent = 'Thank you — your wishes mean the world to us!';
+    note.className = 'form-note ok';
+    qs('#rsvpForm').reset();
+    await loadWishes();
+  } catch(err) {
+    console.error(err);
     localWishes.unshift(entry);
     localStorage.setItem('youssef_yassmin_wishes', JSON.stringify(localWishes));
     renderWishes(localWishes);
     note.textContent = 'Thank you — your wishes mean the world to us!';
     note.className = 'form-note ok';
     qs('#rsvpForm').reset();
+  } finally {
+    btn.disabled = false;
   }
-  btn.disabled = false;
 });
 
 /* ==========================================================================
@@ -1134,7 +1119,8 @@ musicBtn.addEventListener('click', ()=>{
 (async function init(){
   if(CONFIG.heroImage) setHeroImage(CONFIG.heroImage);
   if(CONFIG.venueImage) setVenueImage(CONFIG.venueImage);
-  subscribeToWishes();
+  loadWishes();
+  setInterval(loadWishes, 10000); // Auto-refresh wishes every 10 seconds
 })();
 
 })();
