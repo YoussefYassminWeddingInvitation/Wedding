@@ -19,6 +19,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Parisienne&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+<!-- FIREBASE REALTIME DATABASE SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
 /* ==========================================================================
    0. DESIGN TOKENS
@@ -930,6 +934,28 @@ const CONFIG = {
 };
 
 /* ==========================================================================
+   FIREBASE REALTIME DATABASE INITIALIZATION
+   To connect a live shared database so all guest messages appear for everyone:
+   1. Create a free project at https://console.firebase.google.com/
+   2. Create a Realtime Database and set rules to:
+      { "rules": { ".read": true, ".write": true } }
+   3. Copy your databaseURL below:
+   ========================================================================== */
+const firebaseConfig = {
+  databaseURL: "https://youssef-yassmin-wedding-7c8bd-default-rtdb.firebaseio.com/" // Replace with your Firebase Database URL if created
+};
+
+let db = null;
+if (typeof firebase !== 'undefined' && firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_PROJECT_ID")) {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch (e) {
+    console.warn("Firebase initialization skipped or failed:", e);
+  }
+}
+
+/* ==========================================================================
    UTILITIES
    ========================================================================== */
 const qs = (s,el=document)=>el.querySelector(s);
@@ -942,30 +968,6 @@ function toast(msg){
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
-}
-
-function hasStorage(){ return typeof window.storage !== 'undefined' && window.storage; }
-
-async function storageSet(key, value, shared){
-  if(!hasStorage()) return false;
-  try{
-    const res = await window.storage.set(key, value, shared);
-    return !!res;
-  }catch(e){ console.warn('storage set failed', key, e); return false; }
-}
-async function storageGet(key, shared){
-  if(!hasStorage()) return null;
-  try{
-    const res = await window.storage.get(key, shared);
-    return res ? res.value : null;
-  }catch(e){ return null; }
-}
-async function storageList(prefix, shared){
-  if(!hasStorage()) return [];
-  try{
-    const res = await window.storage.list(prefix, shared);
-    return res && res.keys ? res.keys : [];
-  }catch(e){ return []; }
 }
 
 function setHeroImage(url){
@@ -1141,11 +1143,13 @@ qs('#addCalendarBtn').addEventListener('click', ()=>{
 });
 
 /* ==========================================================================
-   RSVP
+   RSVP & LIVE WISHES WALL
    ========================================================================== */
 const wishesWall = qs('#wishesWall');
+let localWishes = [];
+
 function renderWishes(list){
-  if(!list.length){
+  if(!list || !list.length){
     wishesWall.innerHTML = `<p class="wishes-empty">Be the first to leave a message for ${CONFIG.groom} &amp; ${CONFIG.bride}.</p>`;
     return;
   }
@@ -1155,48 +1159,70 @@ function renderWishes(list){
       <p class="wish-msg">${escapeHtml(w.message)}</p>
     </div>`).join('');
 }
+
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function loadWishes(){
-  const keys = await storageList('rsvp:', true);
-  if(!keys.length) return;
-  const items = [];
-  for(const k of keys){
-    const raw = await storageGet(k.key || k, true);
-    if(raw){ try{ items.push(JSON.parse(raw)); }catch(e){} }
+// Subscribe to real-time database updates if Firebase is active
+function subscribeToWishes(){
+  if (db) {
+    db.ref('wishes').on('value', (snapshot) => {
+      const data = snapshot.val();
+      const items = [];
+      if (data) {
+        Object.keys(data).forEach(key => items.push(data[key]));
+      }
+      items.sort((a,b) => (b.ts||0) - (a.ts||0));
+      renderWishes(items.slice(0, 50));
+    });
+  } else {
+    // Local fallback for testing/offline
+    const saved = localStorage.getItem('youssef_yassmin_wishes');
+    if (saved) {
+      try { localWishes = JSON.parse(saved); } catch(e){}
+    }
+    renderWishes(localWishes);
   }
-  items.sort((a,b)=> (b.ts||0) - (a.ts||0));
-  renderWishes(items.slice(0,25));
 }
-loadWishes();
 
 qs('#rsvpForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const name = qs('#guestName').value.trim();
   const message = qs('#guestMessage').value.trim();
   const note = qs('#rsvpNote');
+  
   if(!name || !message){
     note.textContent = 'Please add your name and a short message.';
     note.className = 'form-note err';
     return;
   }
+  
   const btn = qs('#rsvpSubmitBtn');
   btn.disabled = true;
-  const entry = { name, message, ts:Date.now() };
-  const key = `rsvp:${entry.ts}-${Math.random().toString(36).slice(2,8)}`;
-  const saved = await storageSet(key, JSON.stringify(entry), true);
-  btn.disabled = false;
-  if(saved){
-    note.textContent = 'Thank you — your wishes mean the world to us.';
+  const entry = { name, message, ts: Date.now() };
+
+  if (db) {
+    try {
+      await db.ref('wishes').push(entry);
+      note.textContent = 'Thank you — your wishes mean the world to us!';
+      note.className = 'form-note ok';
+      qs('#rsvpForm').reset();
+    } catch(err) {
+      console.error(err);
+      note.textContent = "Couldn't send your message. Please check your connection.";
+      note.className = 'form-note err';
+    }
+  } else {
+    // Save to local storage as fallback
+    localWishes.unshift(entry);
+    localStorage.setItem('youssef_yassmin_wishes', JSON.stringify(localWishes));
+    renderWishes(localWishes);
+    note.textContent = 'Thank you — your wishes mean the world to us!';
     note.className = 'form-note ok';
     qs('#rsvpForm').reset();
-    loadWishes();
-  } else {
-    note.textContent = "We couldn't save your message right now — please try again.";
-    note.className = 'form-note err';
   }
+  btn.disabled = false;
 });
 
 /* ==========================================================================
@@ -1226,6 +1252,7 @@ musicBtn.addEventListener('click', ()=>{
   if(CONFIG.heroImage) setHeroImage(CONFIG.heroImage);
   if(CONFIG.venueImage) setVenueImage(CONFIG.venueImage);
   renderGallery();
+  subscribeToWishes();
 })();
 
 })();
