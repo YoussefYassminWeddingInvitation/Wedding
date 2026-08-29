@@ -604,13 +604,6 @@ h1,h2,h3,p{ margin:0; }
 }
 .field textarea{ min-height:110px; resize:vertical; }
 .field input:focus, .field textarea:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(173,138,82,0.18); }
-.pill-toggle{ display:flex; gap:10px; }
-.pill-toggle button{
-  flex:1; min-height:50px; border-radius:100px; border:1px solid rgba(173,138,82,0.4);
-  background:var(--card); color:var(--ink-soft); font-size:0.78rem; letter-spacing:0.08em;
-  transition:all .3s ease;
-}
-.pill-toggle button.active{ background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#fff; border-color:transparent; box-shadow:var(--shadow-soft); }
 .rsvp-submit{ width:100%; margin-top:6px; }
 .form-note{ font-size:0.8rem; margin-top:4px; min-height:1.2em; }
 .form-note.ok{ color:#5c7a4f; }
@@ -622,7 +615,6 @@ h1,h2,h3,p{ margin:0; }
   border:1px solid rgba(173,138,82,0.16); box-shadow:var(--shadow-soft);
 }
 .wish-name{ font-family:var(--font-display); font-weight:600; font-size:1rem; color:var(--burgundy); }
-.wish-tag{ font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-deep); margin-left:8px; }
 .wish-msg{ margin-top:6px; color:var(--ink-soft); font-size:0.92rem; line-height:1.6; }
 .wishes-empty{ text-align:center; color:var(--ink-soft); font-size:0.88rem; font-style:italic; }
 
@@ -859,13 +851,6 @@ h1,h2,h3,p{ margin:0; }
       <div class="field">
         <label for="guestName">Guest Name</label>
         <input type="text" id="guestName" placeholder="Your full name" required maxlength="60">
-      </div>
-      <div class="field">
-        <label>Will You Attend?</label>
-        <div class="pill-toggle" id="attendToggle">
-          <button type="button" data-val="Joyfully Accepts" class="active">Joyfully Accepts</button>
-          <button type="button" data-val="Regretfully Declines">Regretfully Declines</button>
-        </div>
       </div>
       <div class="field">
         <label for="guestMessage">Leave Us A Remarkable Message</label>
@@ -1158,15 +1143,6 @@ qs('#addCalendarBtn').addEventListener('click', ()=>{
 /* ==========================================================================
    RSVP
    ========================================================================== */
-let attendValue = 'Joyfully Accepts';
-qsa('#attendToggle button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    qsa('#attendToggle button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    attendValue = btn.dataset.val;
-  });
-});
-
 const wishesWall = qs('#wishesWall');
 function renderWishes(list){
   if(!list.length){
@@ -1175,7 +1151,7 @@ function renderWishes(list){
   }
   wishesWall.innerHTML = list.map(w=>`
     <div class="wish-card">
-      <span class="wish-name">${escapeHtml(w.name)}</span><span class="wish-tag">${escapeHtml(w.attending || '')}</span>
+      <span class="wish-name">${escapeHtml(w.name)}</span>
       <p class="wish-msg">${escapeHtml(w.message)}</p>
     </div>`).join('');
 }
@@ -1208,7 +1184,7 @@ qs('#rsvpForm').addEventListener('submit', async (e)=>{
   }
   const btn = qs('#rsvpSubmitBtn');
   btn.disabled = true;
-  const entry = { name, attending:attendValue, message, ts:Date.now() };
+  const entry = { name, message, ts:Date.now() };
   const key = `rsvp:${entry.ts}-${Math.random().toString(36).slice(2,8)}`;
   const saved = await storageSet(key, JSON.stringify(entry), true);
   btn.disabled = false;
@@ -1216,8 +1192,6 @@ qs('#rsvpForm').addEventListener('submit', async (e)=>{
     note.textContent = 'Thank you — your wishes mean the world to us.';
     note.className = 'form-note ok';
     qs('#rsvpForm').reset();
-    attendValue = 'Joyfully Accepts';
-    qsa('#attendToggle button').forEach((b,i)=>b.classList.toggle('active', i===0));
     loadWishes();
   } else {
     note.textContent = "We couldn't save your message right now — please try again.";
