@@ -920,7 +920,8 @@ const CONFIG = {
   mapsLink:"https://www.google.com/maps/dir/?api=1&destination=Romanica+Venue+Al+Mokattam+Cairo+Egypt",
   mapsEmbed:"https://www.google.com/maps?q=Romanica+Venue+Al+Mokattam+Cairo+Egypt&output=embed",
   dressCode:"Elegant",
-  musicUrl:"https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/Lovely-Long-Version-chosic.com_.mp3",
+  
+  musicUrl: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/Lovely-Long-Version-chosic.com_.mp3",
   
   heroImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg",
   venueImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue_full.jpg",
@@ -935,14 +936,9 @@ const CONFIG = {
 
 /* ==========================================================================
    FIREBASE REALTIME DATABASE INITIALIZATION
-   To connect a live shared database so all guest messages appear for everyone:
-   1. Create a free project at https://console.firebase.google.com/
-   2. Create a Realtime Database and set rules to:
-      { "rules": { ".read": true, ".write": true } }
-   3. Copy your databaseURL below:
    ========================================================================== */
 const firebaseConfig = {
-  databaseURL: "https://youssef-yassmin-wedding-7c8bd-default-rtdb.firebaseio.com/" // Replace with your Firebase Database URL if created
+  databaseURL: "https://youssef-yassmin-wedding-default-rtdb.firebaseio.com"
 };
 
 let db = null;
@@ -960,6 +956,9 @@ if (typeof firebase !== 'undefined' && firebaseConfig.databaseURL && !firebaseCo
    ========================================================================== */
 const qs = (s,el=document)=>el.querySelector(s);
 const qsa = (s,el=document)=>Array.from(el.querySelectorAll(s));
+
+const musicBtn = qs('#music-toggle');
+const audioEl = qs('#bgMusic');
 
 let toastTimer;
 function toast(msg){
@@ -979,7 +978,7 @@ function setVenueImage(url){
 }
 
 /* ==========================================================================
-   ENVELOPE OPENING
+   ENVELOPE OPENING & AUTOPLAY MUSIC
    ========================================================================== */
 function openEnvelope(){
   const seal = qs('#sealBtn');
@@ -988,6 +987,15 @@ function openEnvelope(){
   const tapHint = qs('#tapHint');
   const fullLetter = qs('#fullLetter');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Start music automatically on seal tap (registered as user gesture)
+  if(CONFIG.musicUrl && audioEl){
+    audioEl.play().then(() => {
+      musicBtn.classList.add('playing');
+    }).catch(err => {
+      console.warn("Autoplay blocked/failed:", err);
+    });
+  }
 
   seal.classList.add('cracking');
   seal.disabled = true;
@@ -1164,7 +1172,6 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-// Subscribe to real-time database updates if Firebase is active
 function subscribeToWishes(){
   if (db) {
     db.ref('wishes').on('value', (snapshot) => {
@@ -1177,7 +1184,6 @@ function subscribeToWishes(){
       renderWishes(items.slice(0, 50));
     });
   } else {
-    // Local fallback for testing/offline
     const saved = localStorage.getItem('youssef_yassmin_wishes');
     if (saved) {
       try { localWishes = JSON.parse(saved); } catch(e){}
@@ -1214,7 +1220,6 @@ qs('#rsvpForm').addEventListener('submit', async (e)=>{
       note.className = 'form-note err';
     }
   } else {
-    // Save to local storage as fallback
     localWishes.unshift(entry);
     localStorage.setItem('youssef_yassmin_wishes', JSON.stringify(localWishes));
     renderWishes(localWishes);
@@ -1226,11 +1231,10 @@ qs('#rsvpForm').addEventListener('submit', async (e)=>{
 });
 
 /* ==========================================================================
-   MUSIC
+   MUSIC TOGGLE
    ========================================================================== */
-const musicBtn = qs('#music-toggle');
-const audioEl = qs('#bgMusic');
 if(CONFIG.musicUrl){ audioEl.src = CONFIG.musicUrl; }
+
 musicBtn.addEventListener('click', ()=>{
   if(!CONFIG.musicUrl){
     toast('Add your song URL in the CONFIG at the top of the code to enable music');
