@@ -540,14 +540,12 @@ h1,h2,h3,p{ margin:0; }
   width:100%;
   height:auto;
   display:block;
-  max-height:85vh;
-  object-fit:contain;
 }
 #venue-image::before{
   content:'';
   position:absolute;
   inset:0;
-  background:linear-gradient(180deg, rgba(58,13,24,0.2) 0%, rgba(58,13,24,0.1) 50%, rgba(58,13,24,0.8) 100%);
+  background:linear-gradient(180deg, rgba(58,13,24,0.15) 0%, rgba(58,13,24,0.05) 50%, rgba(58,13,24,0.85) 100%);
   z-index:1;
   pointer-events:none;
 }
@@ -809,7 +807,7 @@ h1,h2,h3,p{ margin:0; }
   <!-- ===================== VENUE FULL IMAGE ===================== -->
   <section id="venue-image">
     <div class="venue-img-wrap">
-      <img id="venueImgEl" src="https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue.jpg" alt="Romanica Venue">
+      <img id="venueImgEl" src="https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue_full.jpg" alt="Romanica Venue">
     </div>
     <div class="venue-image-inner">
       <p class="eyebrow reveal">The Venue</p>
@@ -841,7 +839,7 @@ h1,h2,h3,p{ margin:0; }
     </div>
   </section>
 
-  <!-- ===================== DEDICATED COUNTDOWN ===================== -->
+  <!-- ===================== DEDICATED COUNTDOWN SECTION ===================== -->
   <section id="countdown-section" class="section-pad">
     <p class="eyebrow reveal">The Wait Is Almost Over</p>
     <h2 class="section-heading reveal reveal-delay-1">Counting Down To Our Big Day</h2>
@@ -938,7 +936,7 @@ const CONFIG = {
   musicUrl:"",
   
   heroImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg",
-  venueImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue.jpg",
+  venueImage: "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue_full.jpg",
   galleryPhotos: [
     "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg",
     "https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/story1.jpg",
