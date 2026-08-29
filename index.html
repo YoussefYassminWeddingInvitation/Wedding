@@ -49,9 +49,9 @@
   --nav-h: 72px;
 
   /* HARDCODED PHOTOS - RAW GITHUB LINKS */
+  --envelope-photo: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/Sealed.jpg");
   --hero-img: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg");
   --venue-img: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/venue.jpg");
-  --envelope-photo: url("https://raw.githubusercontent.com/YoussefYassminWeddingInvitation/Wedding/main/images/hero.jpg");
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
@@ -163,9 +163,9 @@ h1,h2,h3,p{ margin:0; }
 .perspective{ perspective:1400px; }
 .envelope-box{
   position:relative;
-  width:min(78vw, 300px);
+  width:min(78vw, 320px);
   aspect-ratio:694/996;
-  max-height:66vh;
+  max-height:68vh;
   transform-style:preserve-3d;
 }
 .envelope-back{
@@ -199,33 +199,28 @@ h1,h2,h3,p{ margin:0; }
 }
 .envelope-box.open .envelope-flap{ transform:rotateX(-172deg); }
 
+/* CLICKABLE SEAL OVERLAY */
 .seal{
   position:absolute;
   left:50%; top:50.5%;
   transform:translate(-50%,-50%);
-  width:72px; height:72px;
+  width:90px; height:90px;
   border-radius:50%;
-  border:2px solid var(--gold-light);
-  background:radial-gradient(circle, #8C6C39 0%, #551523 70%, #3A0D18 100%);
-  box-shadow:0 8px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3);
-  color:var(--gold-pale);
-  font-family:var(--font-script);
-  font-size:1.35rem;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border:none;
+  background:transparent;
+  color:transparent;
+  font-size:0;
   z-index:4;
   cursor:pointer;
-  transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .4s ease, box-shadow .4s ease;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
 }
 .seal:active{ transform:translate(-50%,-50%) scale(0.94); }
 .seal.cracking{ animation:sealPulse .5s ease forwards; }
 .envelope-box.open .seal{ opacity:0; transform:translate(-50%,-90%) scale(0.5); }
 @keyframes sealPulse{
-  0%{ transform:translate(-50%,-50%) scale(1); box-shadow:0 0 0 1px rgba(255,238,200,0.18); }
-  40%{ transform:translate(-50%,-50%) scale(1.12) rotate(-4deg); box-shadow:0 0 0 10px rgba(255,238,200,0.12), 0 0 30px 6px rgba(255,238,200,0.25); }
-  100%{ transform:translate(-50%,-50%) scale(1.05) rotate(0deg); box-shadow:0 0 0 4px rgba(255,238,200,0.15); }
+  0%{ transform:translate(-50%,-50%) scale(1); }
+  40%{ transform:translate(-50%,-50%) scale(1.12) rotate(-4deg); }
+  100%{ transform:translate(-50%,-50%) scale(1.05) rotate(0deg); }
 }
 .tap-hint{
   margin-top:30px;
