@@ -330,14 +330,14 @@ h1,h2,h3,p{ margin:0; }
 }
 
 /* ==========================================================================
-   3. HERO
+   3. HERO (ADJUSTED TO UNCOVER FACES)
    ========================================================================== */
 #home{
   position:relative;
   min-height:100svh;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
   text-align:center;
-  padding:calc(var(--nav-h) + 40px) 24px 60px;
+  padding:calc(var(--nav-h) + 12px) 24px 75px;
   overflow:hidden;
   background:var(--hero-img), radial-gradient(120% 90% at 50% 0%, #6a1c2c 0%, var(--burgundy) 45%, var(--burgundy-deep) 100%);
   background-size:cover; background-position:center;
@@ -345,43 +345,66 @@ h1,h2,h3,p{ margin:0; }
 }
 #home::before{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(58,13,24,0.45) 0%, rgba(58,13,24,0.55) 55%, rgba(58,13,24,0.8) 100%);
+  background:linear-gradient(180deg, rgba(58,13,24,0.4) 0%, rgba(58,13,24,0.2) 40%, rgba(58,13,24,0.75) 80%, rgba(58,13,24,0.9) 100%);
   z-index:0;
 }
 .hero-ornament{ position:absolute; opacity:0.28; z-index:0; }
 .hero-ornament.tl{ top:18px; left:10px; width:90px; transform:rotate(-8deg); }
 .hero-ornament.br{ bottom:18px; right:10px; width:90px; transform:rotate(172deg); }
-.hero-inner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; }
-.hero-eyebrow{ color:var(--gold-light); font-size:0.74rem; letter-spacing:0.36em; text-transform:uppercase; margin-bottom:22px; }
+
+.hero-eyebrow{
+  position:relative;
+  z-index:1;
+  color:var(--gold-light);
+  font-size:clamp(0.85rem, 2.8vw, 1rem);
+  letter-spacing:0.38em;
+  text-transform:uppercase;
+  margin-top:6px;
+  font-weight:600;
+  text-shadow:0 2px 10px rgba(0,0,0,0.7);
+}
+
+.hero-bottom-content{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-top:auto;
+  padding-bottom:10px;
+}
+
 .hero-names{
   font-family:var(--font-script);
-  font-size:clamp(3.2rem, 15vw, 5.6rem);
+  font-size:clamp(2.8rem, 13vw, 5.2rem);
   line-height:1.05;
   color:#fff;
-  text-shadow:0 8px 30px rgba(0,0,0,0.25);
+  text-shadow:0 8px 30px rgba(0,0,0,0.6);
 }
 .hero-amp{ color:var(--gold-light); }
 .hero-sub{
-  margin-top:26px;
+  margin-top:16px;
   max-width:360px;
-  font-size:0.98rem;
-  line-height:1.7;
+  font-size:0.94rem;
+  line-height:1.6;
   font-weight:300;
-  color:rgba(255,255,255,0.9);
+  color:rgba(255,255,255,0.92);
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
 }
 .hero-meta{
-  margin-top:30px;
+  margin-top:20px;
   font-family:var(--font-display);
   font-style:italic;
-  font-size:1.02rem;
+  font-size:0.98rem;
   color:var(--gold-pale);
   letter-spacing:0.02em;
+  text-shadow:0 2px 8px rgba(0,0,0,0.6);
 }
 .hero-scroll-cue{
-  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:8px;
+  position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
   z-index:1;
-  color:rgba(255,255,255,0.75);
+  color:rgba(255,255,255,0.8);
 }
 .hero-scroll-cue span{ font-size:0.62rem; letter-spacing:0.3em; text-transform:uppercase; }
 .hero-scroll-cue svg{ animation:bob 2.2s ease-in-out infinite; }
@@ -684,8 +707,9 @@ h1,h2,h3,p{ margin:0; }
     <svg class="hero-ornament tl" viewBox="0 0 100 100" fill="none" stroke="#DCC593" stroke-width="1.2"><path d="M5 95 C 20 70, 15 40, 40 25 C 55 16, 60 30, 50 38 C 42 44, 35 36, 42 30"/><path d="M15 80 C 22 74 30 74 35 68"/><path d="M25 60 C 32 56 38 58 40 50"/></svg>
     <svg class="hero-ornament br" viewBox="0 0 100 100" fill="none" stroke="#DCC593" stroke-width="1.2"><path d="M5 95 C 20 70, 15 40, 40 25 C 55 16, 60 30, 50 38 C 42 44, 35 36, 42 30"/><path d="M15 80 C 22 74 30 74 35 68"/><path d="M25 60 C 32 56 38 58 40 50"/></svg>
 
-    <div class="hero-inner">
-      <span class="hero-eyebrow">The Wedding Of</span>
+    <span class="hero-eyebrow">The Wedding Of</span>
+
+    <div class="hero-bottom-content">
       <h1 class="hero-names">Youssef <span class="hero-amp">&amp;</span> Yassmin</h1>
       <p class="hero-sub">Together with their families, they invite you to celebrate their wedding</p>
       <p class="hero-meta" id="heroMeta">Sunday, 13 September 2026 · Romanica Venue, Al-Mokattam</p>
